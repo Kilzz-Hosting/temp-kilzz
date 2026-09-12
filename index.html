@@ -124,6 +124,7 @@
   }
   .actions-row button:nth-child(1){ background:var(--green); }
   .actions-row button:nth-child(2){ background:var(--purple); }
+  .actions-row button:nth-child(3){ background:var(--cyan); }
 
   .toast{
     position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
@@ -485,6 +486,7 @@
     <div class="actions-row">
       <button id="newAddrBtn">↻ Alamat Baru</button>
       <button id="refreshBtn">⬇ Cek Sekarang</button>
+      <button id="testTelegramBtn">📨 Tes Telegram</button>
     </div>
   </div>
 
@@ -519,10 +521,10 @@ Play Anime
         </div>
       </div>
       <div class="status-item">
-        <svg class="icon-svg" viewBox="0 0 24 24" id="statBatteryIcon"><rect id="statBatteryOutline" x="2" y="7" width="18" height="10" rx="2"></rect><line id="statBatteryNub" x1="22" y1="10" x2="22" y2="14"></line><rect x="4" y="9" width="6" height="7" class="battery-fill" id="statBatteryFill" style="fill: rgb(255, 159, 28);"></rect></svg>
+        <svg class="icon-svg" viewBox="0 0 24 24" id="statBatteryIcon"><rect id="statBatteryOutline" x="2" y="7" width="18" height="10" rx="2"></rect><line id="statBatteryNub" x1="22" y1="10" x2="22" y2="14"></line><rect x="4" y="9" width="2" height="7" class="battery-fill" id="statBatteryFill" style="fill: rgb(255, 59, 59);"></rect></svg>
         <div class="status-text">
           <div class="status-label">Baterai</div>
-          <div class="status-value" id="statBattery">46%</div>
+          <div class="status-value" id="statBattery">12% (charging)</div>
         </div>
       </div>
     </div>
@@ -817,11 +819,13 @@ Play Anime
     return null;
   }
 
-  async function sendTelegramOtp(otp, mail){
-    if(!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return; // belum dikonfigurasi
-    const text = `🔐 *Kode OTP Terdeteksi*\n\nAlamat: \`${currentAddress}\`\nDari: ${formatSender(mail.from)}\n\nKode:\n\`${otp}\``;
+  async function sendTelegramMessage(text){
+    if(!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID){
+      console.warn('Telegram belum dikonfigurasi (token/chat id kosong).');
+      return false;
+    }
     try{
-      await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body: JSON.stringify({
@@ -830,9 +834,23 @@ Play Anime
           parse_mode: 'Markdown'
         })
       });
+      const data = await res.json().catch(()=>null);
+      if(!res.ok || !data || !data.ok){
+        console.warn('Telegram menolak pesan:', data || res.status);
+        return false;
+      }
+      return true;
     }catch(err){
-      console.warn('Gagal mengirim notifikasi Telegram', err);
+      // Kalau ini yang muncul, biasanya diblokir CORS/CSP di hosting, atau tidak ada koneksi.
+      console.warn('Gagal mengirim notifikasi Telegram (cek koneksi/CSP):', err);
+      return false;
     }
+  }
+
+  function notifyNewMailTelegram(mail, otp){
+    const otpLine = otp ? `\n\n🔐 Kode:\n\`${otp}\`` : '';
+    const text = `📩 *Email Baru Masuk*\n\nAlamat: \`${currentAddress}\`\nDari: ${formatSender(mail.from)}\nSubjek: ${escapeHtml(mail.subject || '(tanpa subjek)')}${otpLine}`;
+    sendTelegramMessage(text);
   }
 
   function showOtpNotification(otp, mail){
@@ -868,12 +886,16 @@ Play Anime
   });
 
   function processOtpForNewMail(mail){
-    if(notifiedOtpIds.has(mail.id)) return;
-    const otp = extractOtp(mail);
-    if(!otp) return;
-    notifiedOtpIds.add(mail.id);
-    showOtpNotification(otp, mail);
-    sendTelegramOtp(otp, mail);
+    let otp = null;
+    if(!notifiedOtpIds.has(mail.id)){
+      otp = extractOtp(mail);
+      if(otp){
+        notifiedOtpIds.add(mail.id);
+        showOtpNotification(otp, mail);
+      }
+    }
+    // Notify Telegram untuk SETIAP email baru (sertakan OTP kalau terdeteksi)
+    notifyNewMailTelegram(mail, otp);
   }
 
   /* ---------- Render list kotak masuk ---------- */
@@ -1075,6 +1097,12 @@ Play Anime
     fetchInbox(false);
   });
 
+  document.getElementById('testTelegramBtn').addEventListener('click', async ()=>{
+    showToast('Mengirim tes...');
+    const ok = await sendTelegramMessage(`✅ *Tes Notifikasi*\n\nWebsite berhasil terhubung ke bot Telegram ini.\nAlamat aktif: \`${currentAddress}\``);
+    showToast(ok ? 'Tes terkirim! Cek Telegram' : 'Gagal — buka console (F12) untuk detail error');
+  });
+
   /* ================= Status Perangkat (data asli) ================= */
   function detectBrowser(){
     const ua = navigator.userAgent;
@@ -1261,6 +1289,7 @@ Play Anime
   // init
   setAddress(currentAddress);
 </script>
+
 
 
 
