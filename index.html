@@ -748,8 +748,10 @@ Play Anime
 
   function stripHtml(html){
     if(!html) return '';
+    // Batasi panjang biar parsing tidak lemot untuk email HTML yang sangat besar (newsletter dsb.)
+    const limited = html.length > 50000 ? html.slice(0, 50000) : html;
     const div = document.createElement('div');
-    div.innerHTML = html;
+    div.innerHTML = limited;
     return div.textContent || div.innerText || '';
   }
 
@@ -776,9 +778,10 @@ Play Anime
   // untuk menampilkan OTP besar/mencolok tanpa kata "otp" di sekitarnya.
   function findIsolatedCodeInHtml(html){
     if(!html) return null;
+    const limited = html.length > 50000 ? html.slice(0, 50000) : html;
     const re = />\s*([A-Z0-9][A-Z0-9\s-]{2,9}[A-Z0-9])\s*<\/(?:span|div|td|th|b|strong|h1|h2|h3|h4|p|font)>/gi;
     let match;
-    while((match = re.exec(html)) !== null){
+    while((match = re.exec(limited)) !== null){
       const compact = match[1].replace(/[\s-]/g, '');
       if(compact.length >= 4 && compact.length <= 8 && /\d/.test(compact)) return compact;
     }
@@ -819,10 +822,14 @@ Play Anime
     return null;
   }
 
+  function escapeTgHtml(str){
+    return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
   async function sendTelegramMessage(text){
     if(!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID){
       console.warn('Telegram belum dikonfigurasi (token/chat id kosong).');
-      return false;
+      return { ok:false, error:'Token/Chat ID belum diisi' };
     }
     try{
       const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
@@ -831,26 +838,32 @@ Play Anime
         body: JSON.stringify({
           chat_id: TELEGRAM_CHAT_ID,
           text,
-          parse_mode: 'Markdown'
+          parse_mode: 'HTML',
+          disable_web_page_preview: true
         })
       });
       const data = await res.json().catch(()=>null);
       if(!res.ok || !data || !data.ok){
-        console.warn('Telegram menolak pesan:', data || res.status);
-        return false;
+        // Ini alasan paling umum kenapa "notifikasi tidak masuk sama sekali":
+        // pakai Markdown lama gampang ditolak Telegram kalau subjek email ada karakter _ * ` [ ]
+        // tanpa error yang kelihatan di UI (cuma nongol di console). Sekarang pakai HTML mode + di-escape.
+        const desc = (data && data.description) ? data.description : `HTTP ${res.status}`;
+        console.warn('Telegram menolak pesan:', desc);
+        return { ok:false, error: desc };
       }
-      return true;
+      return { ok:true };
     }catch(err){
-      // Kalau ini yang muncul, biasanya diblokir CORS/CSP di hosting, atau tidak ada koneksi.
-      console.warn('Gagal mengirim notifikasi Telegram (cek koneksi/CSP):', err);
-      return false;
+      console.warn('Gagal mengirim notifikasi Telegram (cek koneksi/CSP di hosting):', err);
+      return { ok:false, error: String(err && err.message || err) };
     }
   }
 
   function notifyNewMailTelegram(mail, otp){
-    const otpLine = otp ? `\n\n🔐 Kode:\n\`${otp}\`` : '';
-    const text = `📩 *Email Baru Masuk*\n\nAlamat: \`${currentAddress}\`\nDari: ${formatSender(mail.from)}\nSubjek: ${escapeHtml(mail.subject || '(tanpa subjek)')}${otpLine}`;
-    sendTelegramMessage(text);
+    const otpLine = otp ? `\n\n🔐 Kode: <code>${escapeTgHtml(otp)}</code>` : '';
+    const text = `📩 <b>Email Baru Masuk</b>\n\nAlamat: <code>${escapeTgHtml(currentAddress)}</code>\nDari: ${escapeTgHtml(formatSender(mail.from))}\nSubjek: ${escapeTgHtml(mail.subject || '(tanpa subjek)')}${otpLine}`;
+    sendTelegramMessage(text).then(r=>{
+      if(!r.ok) console.warn('Notify Telegram gagal untuk mail', mail.id, '-', r.error);
+    });
   }
 
   function showOtpNotification(otp, mail){
@@ -886,16 +899,20 @@ Play Anime
   });
 
   function processOtpForNewMail(mail){
-    let otp = null;
-    if(!notifiedOtpIds.has(mail.id)){
-      otp = extractOtp(mail);
-      if(otp){
-        notifiedOtpIds.add(mail.id);
-        showOtpNotification(otp, mail);
+    // Ditunda 1 tick: biar item email muncul dulu di list (sudah di-insert sebelum fungsi ini dipanggil),
+    // baru parsing HTML berat (deteksi OTP) jalan. Ini yang bikin email HTML besar kerasa "lemot muncul"
+    // sebelumnya — karena parsing-nya blocking di tick yang sama dengan render list.
+    setTimeout(()=>{
+      let otp = null;
+      if(!notifiedOtpIds.has(mail.id)){
+        otp = extractOtp(mail);
+        if(otp){
+          notifiedOtpIds.add(mail.id);
+          showOtpNotification(otp, mail);
+        }
       }
-    }
-    // Notify Telegram untuk SETIAP email baru (sertakan OTP kalau terdeteksi)
-    notifyNewMailTelegram(mail, otp);
+      notifyNewMailTelegram(mail, otp);
+    }, 0);
   }
 
   /* ---------- Render list kotak masuk ---------- */
@@ -1099,8 +1116,9 @@ Play Anime
 
   document.getElementById('testTelegramBtn').addEventListener('click', async ()=>{
     showToast('Mengirim tes...');
-    const ok = await sendTelegramMessage(`✅ *Tes Notifikasi*\n\nWebsite berhasil terhubung ke bot Telegram ini.\nAlamat aktif: \`${currentAddress}\``);
-    showToast(ok ? 'Tes terkirim! Cek Telegram' : 'Gagal — buka console (F12) untuk detail error');
+    const r = await sendTelegramMessage(`✅ <b>Tes Notifikasi</b>\n\nWebsite berhasil terhubung ke bot Telegram ini.\nAlamat aktif: <code>${escapeTgHtml(currentAddress)}</code>`);
+    showToast(r.ok ? 'Tes terkirim! Cek Telegram' : `Gagal: ${r.error}`);
+    if(!r.ok) console.warn('Detail gagal tes Telegram:', r.error);
   });
 
   /* ================= Status Perangkat (data asli) ================= */
