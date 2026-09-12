@@ -661,6 +661,24 @@ Play Anime
   let pollTimer = null;
   let emailCache = {};
   let notifiedOtpIds = new Set();
+  let firstRenderDone = false;
+  let suppressNotifyForInitialLoad = false;
+
+  function knownIdsKey(addr){ return 'kotak_known_' + addr; }
+
+  function loadKnownIds(addr){
+    try{
+      const raw = localStorage.getItem(knownIdsKey(addr));
+      return raw ? new Set(JSON.parse(raw)) : new Set();
+    }catch(e){ return new Set(); }
+  }
+
+  function saveKnownIds(addr, idsSet){
+    try{
+      const arr = Array.from(idsSet).slice(-200); // simpan 200 id terakhir saja
+      localStorage.setItem(knownIdsKey(addr), JSON.stringify(arr));
+    }catch(e){ /* storage penuh/diblokir, abaikan */ }
+  }
 
   function generateAddress(){
     const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -949,17 +967,24 @@ Play Anime
           <div class="env">✉</div>
           <p>Belum ada surat masuk.<br>Kirim email ke alamat di atas, akan muncul otomatis di sini.</p>
         </div>`;
-      knownIds = new Set();
+      firstRenderDone = true;
       return;
     }
 
     const incomingIds = emails.map(m => m.id);
     const newOnes = emails.filter(m => !knownIds.has(m.id));
 
-    if(knownIds.size === 0){
+    if(!firstRenderDone){
       inboxList.innerHTML = emails.map(mailItemHtml).join('');
       document.querySelectorAll('.mail-item').forEach(attachClickHandler);
-      // Cek OTP hanya untuk pemuatan awal jika memang baru masuk (hindari spam saat refresh pertama)
+      firstRenderDone = true;
+      if(!suppressNotifyForInitialLoad){
+        // Alamat ini belum pernah dilacak di browser ini -> semua email yang muncul
+        // di render pertama dianggap benar-benar baru (mis. langsung kirim OTP setelah generate alamat).
+        newOnes.forEach(mail => processOtpForNewMail(mail));
+      }
+      // Kalau suppressNotifyForInitialLoad true, berarti ini reload alamat LAMA yang sudah
+      // pernah dilacak sebelumnya -> jangan notify ulang untuk histori lama, cukup ditampilkan.
     } else if(newOnes.length > 0){
       newOnes.slice().reverse().forEach(mail => {
         const div = document.createElement('div');
@@ -980,6 +1005,7 @@ Play Anime
     });
 
     knownIds = new Set(incomingIds);
+    saveKnownIds(currentAddress, knownIds);
   }
 
   /* ---------- Modal detail email ---------- */
@@ -1098,6 +1124,10 @@ Play Anime
     currentAddress = addr;
     localStorage.setItem('kotak_address', addr);
     addressText.textContent = addr;
+    const hasHistory = localStorage.getItem(knownIdsKey(addr)) !== null;
+    knownIds = loadKnownIds(addr);
+    suppressNotifyForInitialLoad = hasHistory; // alamat lama yg sudah punya riwayat -> jangan notify batch lama
+    firstRenderDone = false;
     startPolling();
   }
 
