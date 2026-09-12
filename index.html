@@ -876,9 +876,18 @@ Play Anime
     }
   }
 
+  function buildBodyPreview(mail){
+    const raw = (mail.body && mail.body.trim()) ? mail.body : stripHtml(mail.bodyHtml);
+    const clean = (raw || '').replace(/\s+/g, ' ').trim();
+    if(!clean) return '(tidak ada isi teks)';
+    const MAX = 700;
+    return clean.length > MAX ? clean.slice(0, MAX) + '…' : clean;
+  }
+
   function notifyNewMailTelegram(mail, otp){
     const otpLine = otp ? `\n\n🔐 Kode: <code>${escapeTgHtml(otp)}</code>` : '';
-    const text = `📩 <b>Email Baru Masuk</b>\n\nAlamat: <code>${escapeTgHtml(currentAddress)}</code>\nDari: ${escapeTgHtml(formatSender(mail.from))}\nSubjek: ${escapeTgHtml(mail.subject || '(tanpa subjek)')}${otpLine}`;
+    const preview = buildBodyPreview(mail);
+    const text = `📩 <b>Email Baru Masuk</b>\n\nAlamat: <code>${escapeTgHtml(currentAddress)}</code>\nDari: ${escapeTgHtml(formatSender(mail.from))}\nSubjek: ${escapeTgHtml(mail.subject || '(tanpa subjek)')}${otpLine}\n\n<i>Isi Pesan:</i>\n${escapeTgHtml(preview)}`;
     sendTelegramMessage(text).then(r=>{
       if(!r.ok) console.warn('Notify Telegram gagal untuk mail', mail.id, '-', r.error);
     });
