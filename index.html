@@ -1,1353 +1,527 @@
+<!DOCTYPE html>
+<html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kilzz — Temp Mail</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700;800&family=IBM+Plex+Mono:wght@400;500;700&display=swap');
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  :root{
-    --bg:#f2efe4;
-    --panel:#ffffff;
-    --ink:#111111;
-    --ink-dim:#5c5c58;
-    --yellow:#ffde59;
-    --pink:#ff5c8a;
-    --cyan:#4de8f4;
-    --green:#a3f7bf;
-    --purple:#c9a9ff;
-    --line:3px solid var(--ink);
-    --shadow: 5px 5px 0 var(--ink);
-    --shadow-sm: 3px 3px 0 var(--ink);
-  }
-  *{box-sizing:border-box; margin:0; padding:0;}
-  body{
-    background:
-      radial-gradient(circle at 2px 2px, rgba(0,0,0,0.08) 1.5px, transparent 0) 0 0/16px 16px,
-      var(--bg);
-    color:var(--ink);
-    font-family:'Space Grotesk', sans-serif;
-    min-height:100vh;
-    padding:18px 14px 60px;
-  }
+  <title>Arras Mail</title>
 
-  .wrap{max-width:640px; margin:0 auto;}
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-  /* ===== Header ===== */
-  header{
-    display:flex; align-items:center; justify-content:space-between;
-    padding:16px 18px; margin-bottom:20px;
-    background:var(--yellow);
-    border:var(--line);
-    box-shadow:var(--shadow);
-    transform:rotate(-0.4deg);
-  }
-  .brand h1{
-    font-size:24px; font-weight:800; letter-spacing:-0.02em;
-    text-transform:uppercase;
-  }
-  .brand p{
-    font-size:11px; color:var(--ink); margin-top:2px;
-    font-family:'IBM Plex Mono', monospace;
-    font-weight:700;
-  }
-  .stamp{
-    width:50px; height:50px; border:var(--line);
-    display:flex; align-items:center; justify-content:center;
-    font-size:9px; color:var(--ink); font-family:'IBM Plex Mono', monospace;
-    font-weight:700; letter-spacing:0.05em; text-align:center; line-height:1.3;
-    transform:rotate(6deg); flex-shrink:0; background:var(--pink);
-    box-shadow:var(--shadow-sm);
-  }
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #080808;
+    }
 
-  /* ===== Section label ===== */
-  .section-label{
-    display:inline-block;
-    font-size:11px; text-transform:uppercase; letter-spacing:0.1em;
-    font-family:'IBM Plex Mono', monospace; font-weight:700;
-    background:var(--ink); color:var(--bg);
-    padding:4px 10px; margin-bottom:10px;
-  }
+    /* =========================
+       WEBSITE
+    ========================= */
 
-  /* ===== Address card ===== */
-  .address-card{
-    background:var(--panel);
-    border:var(--line);
-    box-shadow:var(--shadow);
-    padding:18px;
-    margin-bottom:20px;
-  }
-  .address-row{
-    display:flex; align-items:stretch; gap:10px;
-  }
-  .address-text{
-    font-family:'IBM Plex Mono', monospace;
-    font-weight:700;
-    font-size:15px;
-    flex:1;
-    word-break:break-all;
-    padding:12px;
-    background:var(--cyan);
-    border:var(--line);
-    display:flex; align-items:center;
-  }
-  button{
-    font-family:'Space Grotesk', sans-serif;
-    font-weight:700;
-    cursor:pointer;
-    border:var(--line);
-    background:var(--panel);
-    color:var(--ink);
-    box-shadow:var(--shadow-sm);
-    transition:transform .08s ease, box-shadow .08s ease;
-  }
-  button:active{
-    transform:translate(3px,3px);
-    box-shadow:0 0 0 var(--ink);
-  }
+    #mailFrame {
+      position: fixed;
+      inset: 0;
 
-  .icon-btn{
-    width:48px; height:auto; flex-shrink:0;
-    background:var(--ink); color:var(--bg);
-    display:flex; align-items:center; justify-content:center;
-    font-size:18px;
-  }
+      width: 100%;
+      height: 100%;
 
-  .actions-row{
-    display:flex; gap:10px; margin-top:12px;
-  }
-  .actions-row button{
-    flex:1;
-    padding:11px;
-    font-size:12px;
-    text-transform:uppercase;
-    letter-spacing:0.04em;
-  }
-  .actions-row button:nth-child(1){ background:var(--green); }
-  .actions-row button:nth-child(2){ background:var(--purple); }
-  .actions-row button:nth-child(3){ background:var(--cyan); }
+      border: 0;
+      background: white;
+    }
 
-  .toast{
-    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
-    background:var(--ink); color:var(--bg);
-    padding:10px 18px;
-    border:var(--line); box-shadow:var(--shadow-sm);
-    font-size:13px; font-weight:700; text-transform:uppercase;
-    opacity:0; pointer-events:none;
-    transition:opacity .2s ease, transform .2s ease;
-    z-index:50;
-  }
-  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+    /* =========================
+       LOADING SCREEN
+    ========================= */
 
-  /* ===== OTP Realtime Notification ===== */
-  .otp-notify{
-    position:fixed; top:14px; left:50%;
-    transform:translateX(-50%) translateY(-140%);
-    width:calc(100% - 28px); max-width:420px;
-    background:var(--ink); color:var(--bg);
-    border:var(--line); box-shadow:var(--shadow);
-    padding:14px 16px;
-    z-index:300;
-    opacity:0; transition:transform .25s ease, opacity .25s ease;
-  }
-  .otp-notify.show{ opacity:1; transform:translateX(-50%) translateY(0); }
-  .otp-notify-head{
-    display:flex; align-items:center; justify-content:space-between;
-    font-size:10px; text-transform:uppercase; letter-spacing:0.08em;
-    font-family:'IBM Plex Mono', monospace; font-weight:700; color:#bdbdb8;
-  }
-  .otp-notify-close{
-    background:none; border:none; box-shadow:none; color:#bdbdb8;
-    font-size:14px; padding:0 0 0 10px; cursor:pointer;
-  }
-  .otp-notify-close:active{ transform:none; }
-  .otp-notify-from{
-    font-size:11px; color:#bdbdb8; margin-top:6px;
-    font-family:'IBM Plex Mono', monospace;
-    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-  }
-  .otp-notify-row{
-    display:flex; align-items:stretch; gap:10px; margin-top:10px;
-  }
-  .otp-notify-code{
-    flex:1; font-family:'IBM Plex Mono', monospace; font-weight:800;
-    font-size:22px; letter-spacing:0.12em;
-    background:var(--yellow); color:var(--ink);
-    border:3px solid var(--bg);
-    padding:8px 12px; display:flex; align-items:center; justify-content:center;
-  }
-  .otp-notify-copy{
-    flex-shrink:0; padding:0 16px; font-size:12px; text-transform:uppercase;
-    background:var(--green); color:var(--ink); border:3px solid var(--bg);
-    box-shadow:none;
-  }
-  .otp-notify-copy:active{ transform:translate(2px,2px); }
-  .otp-notify-copy.copied{ background:var(--cyan); }
+    #loading {
+      position: fixed;
+      inset: 0;
 
-  /* ===== Music Player Card ===== */
-  .player-card{
-    background:var(--ink);
-    color:var(--bg);
-    border:var(--line);
-    box-shadow:var(--shadow);
-    padding:16px;
-    margin-bottom:20px;
-    transform:rotate(0.3deg);
-  }
-  .player-top{
-    display:flex; gap:14px; align-items:center;
-  }
-  .player-cover{
-    width:64px; height:64px; flex-shrink:0;
-    border:3px solid var(--bg);
-    background:var(--pink) center/cover no-repeat;
-    display:flex; align-items:center; justify-content:center;
-    font-size:22px;
-  }
-  .player-info{ flex:1; min-width:0; }
-  .player-title{
-    font-size:15px; font-weight:800;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  }
-  .player-artist{
-    font-size:12px; color:#bdbdb8; margin-top:2px;
-    font-family:'IBM Plex Mono', monospace;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  }
-  .player-progress{
-    width:100%; height:6px; background:#333; margin-top:14px;
-    border:2px solid var(--bg); cursor:pointer; position:relative;
-  }
-  .player-progress-fill{
-    height:100%; width:0%; background:var(--yellow);
-  }
-  .player-time{
-    display:flex; justify-content:space-between;
-    font-size:10px; color:#bdbdb8; margin-top:5px;
-    font-family:'IBM Plex Mono', monospace;
-  }
-  .player-controls{
-    display:flex; gap:10px; margin-top:14px;
-  }
-  .player-controls button{
-    flex:1; padding:12px;
-    background:var(--bg); color:var(--ink);
-    font-size:13px; text-transform:uppercase; letter-spacing:0.04em;
-    border:3px solid var(--bg);
-    box-shadow:none;
-  }
-  .player-controls button:active{ transform:translate(2px,2px); }
-  .player-controls .btn-play{ background:var(--yellow); }
-  .player-controls .btn-next{ background:var(--cyan); }
-  .player-tracklist{
-    margin-top:14px; border-top:2px dashed #444; padding-top:10px;
-    max-height:120px; overflow-y:auto;
-  }
-  .player-track-item{
-    display:flex; justify-content:space-between; gap:8px;
-    padding:7px 6px; font-size:12px; cursor:pointer;
-    font-family:'IBM Plex Mono', monospace;
-  }
-  .player-track-item.active{ background:var(--yellow); color:var(--ink); font-weight:700; }
-  .player-track-item:not(.active):hover{ background:#222; }
-  .player-track-name{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+      z-index: 9999;
 
-  /* ===== Video Anime Card (menyatu dengan status) ===== */
-  .video-card{
-    background:var(--panel);
-    border:var(--line);
-    box-shadow:var(--shadow);
-    padding:16px;
-    margin-bottom:20px;
-    transform:rotate(-0.3deg);
-  }
-  .video-frame{
-    width:100%;
-    aspect-ratio:16/9;
-    background:#000;
-    border:var(--line);
-  }
-  .video-frame video{
-    width:100%; height:100%; display:block; background:#000;
-    pointer-events:none;
-  }
-  .icon-svg{
-    width:20px; height:20px; flex-shrink:0;
-    stroke:var(--ink); fill:none;
-    stroke-width:2; stroke-linecap:round; stroke-linejoin:round;
-  }
-  .icon-svg.filled{ fill:var(--ink); stroke:none; }
-  .battery-fill{ fill:var(--ink); stroke:none; }
+      display: flex;
+      align-items: center;
+      justify-content: center;
 
-  /* ===== Status Perangkat (di dalam video-card) ===== */
-  .status-grid{
-    display:grid; grid-template-columns:1fr 1fr;
-    gap:10px;
-    margin-top:14px;
-    padding-top:14px;
-    border-top:3px dashed var(--ink);
-  }
-  .status-item{
-    background:var(--bg);
-    border:2.5px solid var(--ink);
-    padding:10px;
-    display:flex; align-items:center; gap:9px;
-  }
-  .status-text{ min-width:0; }
-  .status-label{
-    font-size:9px; text-transform:uppercase; letter-spacing:0.08em;
-    color:var(--ink-dim); font-weight:700;
-    font-family:'IBM Plex Mono', monospace;
-  }
-  .status-value{
-    font-size:13px; font-weight:800;
-    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-  }
+      background:
+        radial-gradient(
+          circle at center,
+          #181818 0%,
+          #080808 60%,
+          #000 100%
+        );
 
-  /* ===== Inbox ===== */
-  .inbox-head{
-    display:flex; align-items:center; justify-content:space-between;
-    margin-bottom:12px;
-  }
-  .live-dot{
-    width:9px; height:9px; border-radius:50%; background:var(--green);
-    border:2px solid var(--ink);
-    display:inline-block; margin-right:6px;
-    animation:pulse 1.6s infinite;
-  }
-  @keyframes pulse{
-    0%,100%{ opacity:1; } 50%{ opacity:.3; }
-  }
-  .status{
-    font-size:11px; color:var(--ink); font-family:'IBM Plex Mono', monospace;
-    font-weight:700; display:flex; align-items:center;
-  }
+      transition:
+        opacity .7s ease,
+        visibility .7s ease;
+    }
 
-  .empty-state{
-    text-align:center; padding:50px 20px;
-    background:var(--panel); border:var(--line); box-shadow:var(--shadow);
-    color:var(--ink);
-  }
-  .empty-state .env{
-    font-size:38px; margin-bottom:12px;
-  }
-  .empty-state p{ font-size:13px; line-height:1.6; font-weight:500; }
+    #loading.hide {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
 
-  .mail-item{
-    background:var(--panel);
-    border:var(--line);
-    box-shadow:var(--shadow-sm);
-    padding:14px 16px;
-    margin-bottom:12px;
-    cursor:pointer;
-    transition:transform .1s ease, box-shadow .1s ease;
-    animation:slideIn .3s ease;
-  }
-  .mail-item:hover{
-    transform:translate(-2px,-2px);
-    box-shadow:7px 7px 0 var(--ink);
-  }
-  .mail-item:active{
-    transform:translate(2px,2px);
-    box-shadow:1px 1px 0 var(--ink);
-  }
-  @keyframes slideIn{
-    from{ opacity:0; transform:translateY(-8px); }
-    to{ opacity:1; transform:translateY(0); }
-  }
-  .mail-top{
-    display:flex; justify-content:space-between; gap:10px;
-    margin-bottom:4px;
-  }
-  .mail-from{
-    font-size:13px; font-weight:700;
-    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-  }
-  .mail-time{
-    font-size:11px; color:var(--ink-dim); flex-shrink:0;
-    font-family:'IBM Plex Mono', monospace; font-weight:700;
-  }
-  .mail-subject{
-    font-size:14px; color:var(--ink-dim); font-weight:500;
-    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-  }
-  .mail-badges{
-    display:flex; gap:6px; margin-top:8px;
-  }
-  .mail-badge{
-    font-size:9px; text-transform:uppercase; font-weight:700;
-    font-family:'IBM Plex Mono', monospace;
-    padding:2px 7px; border:2px solid var(--ink);
-  }
-  .mail-badge.img{ background:var(--purple); }
-  .mail-badge.html{ background:var(--cyan); }
+    /* =========================
+       CONTENT
+    ========================= */
 
-  /* ===== Modal ===== */
-  .modal-overlay{
-    position:fixed; inset:0; background:rgba(0,0,0,.55);
-    display:flex; align-items:flex-end; justify-content:center;
-    opacity:0; pointer-events:none; transition:opacity .2s ease;
-    z-index:100;
-  }
-  .modal-overlay.show{ opacity:1; pointer-events:auto; }
-  .modal{
-    background:var(--panel);
-    border-top:var(--line); border-left:var(--line); border-right:var(--line);
-    width:100%; max-width:640px;
-    max-height:85vh;
-    padding:20px 18px 30px;
-    transform:translateY(100%);
-    transition:transform .25s ease;
-    overflow-y:auto;
-  }
-  .modal-overlay.show .modal{ transform:translateY(0); }
-  .modal-close{
-    width:34px; height:34px;
-    background:var(--pink); border:var(--line); color:var(--ink);
-    font-size:14px; font-weight:700; margin-left:auto; display:block;
-    box-shadow:var(--shadow-sm);
-  }
-  .modal h3{ font-size:18px; margin-top:14px; line-height:1.4; font-weight:800; }
-  .modal .meta{
-    font-size:11px; color:var(--ink-dim); margin-top:8px;
-    font-family:'IBM Plex Mono', monospace; font-weight:700;
-    padding-bottom:14px; border-bottom:3px dashed var(--ink);
-  }
-  .modal .body-text{
-    font-size:14px; line-height:1.7; margin-top:16px;
-    white-space:pre-wrap; word-break:break-word;
-  }
+    .loader-container {
+      width: min(88vw, 430px);
 
-  .view-toggle{
-    display:flex; gap:8px; margin-top:14px;
-  }
-  .view-toggle button{
-    padding:8px 14px; font-size:11px; text-transform:uppercase;
-    font-weight:700;
-    background:var(--panel); color:var(--ink);
-  }
-  .view-toggle button.active{
-    background:var(--yellow);
-  }
-  #modalHtmlFrame{
-    width:100%; min-height:300px; border:var(--line);
-    margin-top:12px; background:#fff;
-  }
+      text-align: center;
 
-  .attach-grid{
-    display:grid; grid-template-columns:repeat(3,1fr); gap:8px;
-    margin-top:14px;
-  }
-  .attach-thumb{
-    aspect-ratio:1/1; border:3px solid var(--ink);
-    background:#eee center/cover no-repeat;
-    cursor:pointer; position:relative;
-  }
-  .attach-thumb .attach-name{
-    position:absolute; bottom:0; left:0; right:0;
-    background:rgba(0,0,0,.7); color:#fff;
-    font-size:8px; padding:2px 4px;
-    font-family:'IBM Plex Mono', monospace;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  }
-  .inline-body-img{
-    max-width:100%; border:3px solid var(--ink);
-    margin-top:10px; display:block;
-  }
+      animation: appear .6s ease;
+    }
 
-  .lightbox{
-    position:fixed; inset:0; background:rgba(0,0,0,.85);
-    display:flex; align-items:center; justify-content:center;
-    opacity:0; pointer-events:none; transition:opacity .2s ease;
-    z-index:200; padding:20px;
-  }
-  .lightbox.show{ opacity:1; pointer-events:auto; }
-  .lightbox img{
-    max-width:100%; max-height:90vh; border:var(--line);
-  }
-</style>
-<style id="sb_cln_style">ins[class*="adsbygoogle"],ins[class*="adsbyadop"],[id*="div-gpt-ad"],amp-ad{display:none !important;}</style></head>
+    @keyframes appear {
+      from {
+        opacity: 0;
+        transform: translateY(12px) scale(.97);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    /* =========================
+       GLASS VIDEO PLAYER
+    ========================= */
+
+    .video-glass {
+      position: relative;
+
+      padding: 7px;
+
+      border-radius: 20px;
+
+      background: rgba(255,255,255,.07);
+
+      border: 1px solid rgba(255,255,255,.14);
+
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+
+      box-shadow:
+        0 20px 60px rgba(0,0,0,.45),
+        inset 0 1px 0 rgba(255,255,255,.08);
+    }
+
+    .anime-video {
+      width: 100%;
+
+      display: block;
+
+      aspect-ratio: 16 / 9;
+
+      object-fit: cover;
+
+      border-radius: 14px;
+
+      background: #111;
+    }
+
+    /* =========================
+       PERCENTAGE
+    ========================= */
+
+    .percentage {
+      margin-top: 24px;
+
+      color: white;
+
+      font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+      font-size: 34px;
+
+      font-weight: 700;
+
+      letter-spacing: -1px;
+    }
+
+    .loading-text {
+      margin-top: 5px;
+
+      color: rgba(255,255,255,.62);
+
+      font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+      font-size: 13px;
+    }
+
+    /* =========================
+       PROGRESS BAR
+    ========================= */
+
+    .progress-wrapper {
+      width: 100%;
+
+      height: 5px;
+
+      margin-top: 18px;
+
+      overflow: hidden;
+
+      border-radius: 999px;
+
+      background: rgba(255,255,255,.1);
+
+      border: 1px solid rgba(255,255,255,.05);
+    }
+
+    .progress {
+      width: 0%;
+
+      height: 100%;
+
+      border-radius: inherit;
+
+      background: linear-gradient(
+        90deg,
+        #ffffff,
+        #bdbdbd
+      );
+
+      box-shadow:
+        0 0 12px rgba(255,255,255,.35);
+
+      transition: width .15s ease;
+    }
+
+    /* =========================
+       SMALL STATUS
+    ========================= */
+
+    .status {
+      margin-top: 10px;
+
+      color: rgba(255,255,255,.35);
+
+      font-family: Arial, sans-serif;
+
+      font-size: 11px;
+    }
+
+    /* =========================
+       MOBILE
+    ========================= */
+
+    @media (max-width: 480px) {
+
+      .loader-container {
+        width: 88vw;
+      }
+
+      .video-glass {
+        padding: 5px;
+        border-radius: 17px;
+      }
+
+      .anime-video {
+        border-radius: 12px;
+      }
+
+      .percentage {
+        font-size: 30px;
+        margin-top: 20px;
+      }
+
+      .progress-wrapper {
+        margin-top: 15px;
+      }
+    }
+  </style>
+</head>
+
 <body>
 
-<div class="wrap">
-  <header>
-    <div class="brand">
-      <h1>Kilzz TempMail</h1>
-      <p>&gt; alamat sekali pakai_</p>
-    </div>
-    <div class="stamp">TEMP<br>MAIL</div>
-  </header>
+  <!-- TEMP ARRAS MAIL -->
+  <iframe
+    id="mailFrame"
+    src="https://temp.arras-mail.my.id"
+    allow="clipboard-read; clipboard-write; fullscreen"
+    loading="eager">
+  </iframe>
 
-  <div class="section-label">✉ Alamat Aktif</div>
-  <div class="address-card">
-    <div class="address-row">
-      <div class="address-text" id="addressText">atnycn3b@arras-mail.my.id</div>
-      <button class="icon-btn" id="copyBtn" title="Salin">⧉</button>
-    </div>
-    <div class="actions-row">
-      <button id="newAddrBtn">↻ Alamat Baru</button>
-      <button id="refreshBtn">⬇ Cek Sekarang</button>
-      <button id="testTelegramBtn">📨 Tes Telegram</button>
-    </div>
-  </div>
 
-  <div class="section-label">
-    <svg class="icon-svg filled" viewBox="0 0 24 24" style="width:12px;height:12px;display:inline-block;vertical-align:-1px;margin-right:2px;"><polygon points="6,4 20,12 6,20"></polygon></svg>
-Play Anime  
-  </div>
-  <div class="video-card">
-    <div class="video-frame">
-      <video id="animeVideo" autoplay="" muted="" loop="" playsinline="" src="https://files.catbox.moe/nc63iv.mp4"></video>
-    </div>
-    <div class="status-grid">
-      <div class="status-item">
-        <svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c2.5 2.7 3.8 6 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-6-3.8-9s1.3-6.3 3.8-9z"></path></svg>
-        <div class="status-text">
-          <div class="status-label">Negara</div>
-          <div class="status-value" id="statNegara">Indonesia</div>
+  <!-- LOADING -->
+  <div id="loading">
+
+    <div class="loader-container">
+
+      <!-- Glass Video -->
+      <div class="video-glass">
+
+        <video
+          id="animeVideo"
+          class="anime-video"
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="auto">
+
+          <!-- GANTI URL VIDEO DI SINI -->
+          <source
+            src="https://files.catbox.moe/nc63iv.mp4"
+            type="video/mp4">
+
+        </video>
+
+      </div>
+
+
+      <!-- Percentage -->
+      <div
+        id="percentage"
+        class="percentage">
+        0%
+      </div>
+
+
+      <!-- Text -->
+      <div class="loading-text">
+        Memuat Arras Mail
+      </div>
+
+
+      <!-- Progress -->
+      <div class="progress-wrapper">
+
+        <div
+          id="progress"
+          class="progress">
         </div>
+
       </div>
-      <div class="status-item">
-        <svg class="icon-svg" viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"></rect><line x1="11" y1="18" x2="13" y2="18"></line></svg>
-        <div class="status-text">
-          <div class="status-label">Device</div>
-          <div class="status-value" id="statDevice">Android</div>
-        </div>
+
+
+      <!-- Status -->
+      <div
+        id="status"
+        class="status">
+        Menyiapkan halaman...
       </div>
-      <div class="status-item">
-        <svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><polygon points="15,9 13,13 9,15 11,11" class="icon-svg filled"></polygon></svg>
-        <div class="status-text">
-          <div class="status-label">Browser</div>
-          <div class="status-value" id="statBrowser">Chrome</div>
-        </div>
-      </div>
-      <div class="status-item">
-        <svg class="icon-svg" viewBox="0 0 24 24" id="statBatteryIcon"><rect id="statBatteryOutline" x="2" y="7" width="18" height="10" rx="2"></rect><line id="statBatteryNub" x1="22" y1="10" x2="22" y2="14"></line><rect x="4" y="9" width="2" height="7" class="battery-fill" id="statBatteryFill" style="fill: rgb(255, 59, 59);"></rect></svg>
-        <div class="status-text">
-          <div class="status-label">Baterai</div>
-          <div class="status-value" id="statBattery">12% (charging)</div>
-        </div>
-      </div>
+
     </div>
+
   </div>
 
-  <div class="section-label">♫ Music Player</div>
-  <div class="player-card">
-    <div class="player-top">
-      <div class="player-cover" id="playerCover" style="background-image: url(&quot;https://files.catbox.moe/1eya59.jpg&quot;);"></div>
-      <div class="player-info">
-        <div class="player-title" id="playerTitle">Sesi Potret</div>
-        <div class="player-artist" id="playerArtist">enau</div>
-      </div>
-    </div>
-    <div class="player-progress" id="playerProgress">
-      <div class="player-progress-fill" id="playerProgressFill" style="width: 0%;"></div>
-    </div>
-    <div class="player-time">
-      <span id="playerCurTime">0:00</span>
-      <span id="playerDurTime">0:00</span>
-    </div>
-    <div class="player-controls">
-      <button class="btn-play" id="btnPlayPause">▶ Play</button>
-      <button class="btn-next" id="btnNext">Next ⏭</button>
-    </div>
-    <div class="player-tracklist" id="playerTracklist">
-      <div class="player-track-item active" data-index="0">
-        <span class="player-track-name">1. Sesi Potret — enau</span>
-        <span></span>
-      </div>
-    
-      <div class="player-track-item " data-index="1">
-        <span class="player-track-name">2. Kicau Mania — Maman Fvndi</span>
-        <span></span>
-      </div>
-    
-      <div class="player-track-item " data-index="2">
-        <span class="player-track-name">3. Foto Kita Blur — Sal Priadi</span>
-        <span></span>
-      </div>
-    </div>
-  </div>
 
-  <div class="inbox-head">
-    <div class="section-label" style="margin-bottom:0;">📥 Kotak Masuk</div>
-    <div class="status"><span class="live-dot"></span><span id="statusText">Active...</span></div>
-  </div>
+  <script>
 
-  <div id="inboxList">
-        <div class="empty-state">
-          <div class="env">✉</div>
-          <p>Belum ada surat masuk.<br>Kirim email ke alamat di atas, akan muncul otomatis di sini.</p>
-        </div></div>
-</div>
+    const frame =
+      document.getElementById("mailFrame");
 
-<div class="toast" id="toast">Disalin</div>
+    const loading =
+      document.getElementById("loading");
 
-<div class="otp-notify" id="otpNotify">
-  <div class="otp-notify-head">
-    <span>🔐 OTP Terdeteksi</span>
-    <button class="otp-notify-close" id="otpNotifyClose">✕</button>
-  </div>
-  <div class="otp-notify-from" id="otpNotifyFrom">dari —</div>
-  <div class="otp-notify-row">
-    <div class="otp-notify-code" id="otpNotifyCode">000000</div>
-    <button class="otp-notify-copy" id="otpNotifyCopy">Salin</button>
-  </div>
-</div>
+    const percentage =
+      document.getElementById("percentage");
 
-<div class="modal-overlay" id="modalOverlay">
-  <div class="modal">
-    <button class="modal-close" id="modalClose">✕</button>
-    <h3 id="modalSubject"></h3>
-    <div class="meta" id="modalMeta"></div>
-    <div class="view-toggle" id="viewToggle" style="display:none;">
-      <button id="btnViewHtml" class="active">HTML</button>
-      <button id="btnViewText">Text</button>
-    </div>
-    <div class="body-text" id="modalBody"></div>
-    <iframe id="modalHtmlFrame" sandbox="allow-same-origin" style="display:none;"></iframe>
-    <div class="attach-grid" id="attachGrid"></div>
-  </div>
-</div>
+    const progress =
+      document.getElementById("progress");
 
-<div class="lightbox" id="lightbox">
-  <img id="lightboxImg" src="" alt="">
-</div>
+    const status =
+      document.getElementById("status");
 
-<script>
-  // ====== KONFIGURASI — ganti sesuai punya kamu ======
-  const API_BASE = "https://tempmail-api.culuncuni.workers.dev";
-  const DOMAIN = "arras-mail.my.id";
-  const POLL_INTERVAL = 500;
 
-  // ====== Telegram Notify (OTP only) — isi sendiri nanti ======
-  // Buat bot lewat @BotFather lalu isi TELEGRAM_BOT_TOKEN.
-  // Ambil chat id kamu (misal lewat @userinfobot) lalu isi TELEGRAM_CHAT_ID.
-  const TELEGRAM_BOT_TOKEN = "8921610004:AAEvdnVKzR_ETXfoyYMqYd745CqGt4qNBoI"; // <-- token bot, sengaja dikosongkan
-  const TELEGRAM_CHAT_ID   = "1586628307"; // <-- chat id tujuan notifikasi
+    let frameLoaded = false;
+    let currentProgress = 0;
 
-  // Daftar lagu untuk music player — ganti "url" dengan link file audio (mp3/ogg) kamu.
-  // Bisa taruh link langsung (contoh: hasil upload ke Catbox / storage lain).
-  const TRACKS = [
-    {
-      title: "Sesi Potret",
-      artist: "enau",
-      url: "https://files.catbox.moe/2cxawy",
-      cover: "https://files.catbox.moe/1eya59.jpg"
-    },
-    {
-      title: "Kicau Mania",
-      artist: "Maman Fvndi",
-      url: "https://files.catbox.moe/rv9xl4.mp3",
-      cover: "https://files.catbox.moe/ryz82b.jpg"
-    },
-    {
-      title: "Foto Kita Blur",
-      artist: "Sal Priadi",
-      url: "https://files.catbox.moe/x5o6xc.mp3",
-      cover: "https://files.catbox.moe/dk39ex.jpg"
-    }
-  ];
-  // Sumber video anime (single source, tanpa multi-episode/next)
-  const ANIME_VIDEO_URL = "https://files.catbox.moe/nc63iv.mp4";
-  // =====================================================
 
-  const addressText = document.getElementById('addressText');
-  const inboxList = document.getElementById('inboxList');
-  const statusText = document.getElementById('statusText');
-  const toast = document.getElementById('toast');
+    /*
+     * Animasi progress 0 → 100
+     *
+     * Dibuat smooth dan tidak terlalu cepat
+     * agar loading terasa natural.
+     */
 
-  let currentAddress = localStorage.getItem('kotak_address') || generateAddress();
-  let knownIds = new Set();
-  let pollTimer = null;
-  let emailCache = {};
-  let notifiedOtpIds = new Set();
-  let firstRenderDone = false;
-  let suppressNotifyForInitialLoad = false;
+    const progressTimer =
+      setInterval(() => {
 
-  function knownIdsKey(addr){ return 'kotak_known_' + addr; }
+        if (currentProgress < 90) {
 
-  function loadKnownIds(addr){
-    try{
-      const raw = localStorage.getItem(knownIdsKey(addr));
-      return raw ? new Set(JSON.parse(raw)) : new Set();
-    }catch(e){ return new Set(); }
-  }
+          /*
+           * Kecepatan progress makin lambat
+           * mendekati 90%.
+           */
 
-  function saveKnownIds(addr, idsSet){
-    try{
-      const arr = Array.from(idsSet).slice(-200); // simpan 200 id terakhir saja
-      localStorage.setItem(knownIdsKey(addr), JSON.stringify(arr));
-    }catch(e){ /* storage penuh/diblokir, abaikan */ }
-  }
+          let increment;
 
-  function generateAddress(){
-    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    let rand = '';
-    for(let i=0;i<8;i++) rand += chars[Math.floor(Math.random()*chars.length)];
-    return `${rand}@${DOMAIN}`;
-  }
+          if (currentProgress < 30) {
+            increment = 2.5;
+          }
 
-  function showToast(msg){
-    toast.textContent = msg;
-    toast.classList.add('show');
-    setTimeout(()=> toast.classList.remove('show'), 1600);
-  }
+          else if (currentProgress < 60) {
+            increment = 1.5;
+          }
 
-  function timeAgo(iso){
-    const diff = Math.floor((Date.now() - new Date(iso).getTime())/1000);
-    if(diff < 60) return 'baru saja';
-    if(diff < 3600) return Math.floor(diff/60)+'m lalu';
-    if(diff < 86400) return Math.floor(diff/3600)+'j lalu';
-    return Math.floor(diff/86400)+'h lalu';
-  }
+          else {
+            increment = 0.5;
+          }
 
-  function escapeHtml(str){
-    const div = document.createElement('div');
-    div.textContent = str || '';
-    return div.innerHTML;
-  }
+          currentProgress += increment;
 
-  function formatSender(from){
-    if(!from) return '(tidak diketahui)';
-    const parts = from.split('@');
-    const domain = parts[parts.length - 1];
-    if(from.length > 40 || from.includes('bounces')){
-      return `via ${domain}`;
-    }
-    return from;
-  }
+          updateProgress();
 
-  /* ---------- Deteksi gambar pada sebuah email ---------- */
-  function getImageAttachments(mail){
-    if(!Array.isArray(mail.attachments)) return [];
-    return mail.attachments.filter(a=>{
-      const type = (a.contentType || a.mimeType || a.type || '').toLowerCase();
-      const name = (a.filename || a.name || '').toLowerCase();
-      return type.startsWith('image/') || /\.(png|jpe?g|gif|webp|bmp|svg)$/.test(name);
-    });
-  }
-
-  function attachmentSrc(att){
-    if(att.url) return att.url;
-    if(att.content){
-      const type = att.contentType || att.mimeType || 'image/png';
-      return `data:${type};base64,${att.content}`;
-    }
-    if(att.data){
-      const type = att.contentType || att.mimeType || 'image/png';
-      return `data:${type};base64,${att.data}`;
-    }
-    return '';
-  }
-
-  function extractImageUrlsFromText(text){
-    if(!text) return [];
-    const regex = /https?:\/\/\S+\.(?:png|jpe?g|gif|webp|bmp)(?:\?\S*)?/gi;
-    return text.match(regex) || [];
-  }
-
-  function mailHasImage(mail){
-    return getImageAttachments(mail).length > 0 || extractImageUrlsFromText(mail.body).length > 0;
-  }
-
-  /* ---------- Deteksi OTP & Notifikasi Telegram ---------- */
-  const OTP_KEYWORD_RE = /\b(otp|kode(?:\s*(?:akses|rahasia|verifikasi|masuk))?|verifikasi|verification|passcode|\bpin\b|one[- ]?time|onetime|security\s*code|access\s*code|login\s*code|confirmation\s*code|auth(?:entication)?\s*code|token|kode\s*keamanan|c[oó]digo|mã\s*x[aá]c\s*nh[aậ]n)\b/i;
-  // \b regex JS tidak berlaku rapi untuk aksara non-Latin (Mandarin/Korea), jadi dicek terpisah lewat substring.
-  const OTP_KEYWORD_SUBSTR = ['验证码', '인증번호', '인증'];
-
-  function hasOtpKeyword(text){
-    if(OTP_KEYWORD_RE.test(text)) return true;
-    return OTP_KEYWORD_SUBSTR.some(k => text.includes(k));
-  }
-
-  // Kalau tidak mau menebak OTP saat sama sekali tidak ada kata kunci (lebih aman, lebih sedikit false-positive),
-  // set ke false. Kalau true, dipakai sebagai fallback terakhir untuk email yang cuma menampilkan kode polos.
-  const OTP_FALLBACK_NO_KEYWORD = true;
-
-  function stripHtml(html){
-    if(!html) return '';
-    // Batasi panjang biar parsing tidak lemot untuk email HTML yang sangat besar (newsletter dsb.)
-    const limited = html.length > 50000 ? html.slice(0, 50000) : html;
-    const div = document.createElement('div');
-    div.innerHTML = limited;
-    return div.textContent || div.innerText || '';
-  }
-
-  function getAllMailText(mail){
-    return [mail.subject, mail.body, stripHtml(mail.bodyHtml)].filter(Boolean).join('\n');
-  }
-
-  function findCodeNearby(text){
-    // Kode angka 4-8 digit, boleh dipisah spasi/strip (mis. "123 456")
-    const numeric = text.match(/\b\d[\d\s-]{2,9}\d\b/g) || [];
-    for(const m of numeric){
-      const digits = m.replace(/[\s-]/g, '');
-      if(digits.length >= 4 && digits.length <= 8) return digits;
-    }
-    // Fallback kode alfanumerik (mis. "G-041236")
-    const alnum = text.match(/\b[A-Z0-9]{5,8}\b/g) || [];
-    for(const m of alnum){
-      if(/\d/.test(m) && /[A-Z]/.test(m)) return m;
-    }
-    return null;
-  }
-
-  // Cari kode yang "berdiri sendiri" langsung di dalam tag HTML — umum dipakai
-  // untuk menampilkan OTP besar/mencolok tanpa kata "otp" di sekitarnya.
-  function findIsolatedCodeInHtml(html){
-    if(!html) return null;
-    const limited = html.length > 50000 ? html.slice(0, 50000) : html;
-    const re = />\s*([A-Z0-9][A-Z0-9\s-]{2,9}[A-Z0-9])\s*<\/(?:span|div|td|th|b|strong|h1|h2|h3|h4|p|font)>/gi;
-    let match;
-    while((match = re.exec(limited)) !== null){
-      const compact = match[1].replace(/[\s-]/g, '');
-      if(compact.length >= 4 && compact.length <= 8 && /\d/.test(compact)) return compact;
-    }
-    return null;
-  }
-
-  // Fallback lain: baris teks polos yang isinya HANYA kode (tanpa kalimat lain di baris itu)
-  function findIsolatedCodeInPlainText(text){
-    const lines = text.split(/\n+/).map(l => l.trim()).filter(Boolean);
-    for(const line of lines){
-      if(/^[A-Z0-9][A-Z0-9\s-]{2,9}[A-Z0-9]$/.test(line)){
-        const compact = line.replace(/[\s-]/g, '');
-        if(compact.length >= 4 && compact.length <= 8 && /\d/.test(compact)) return compact;
-      }
-    }
-    return null;
-  }
-
-  function extractOtp(mail){
-    const plain = getAllMailText(mail);
-
-    // Tier 1: ada kata kunci OTP (di subjek, teks, ATAU html yang sudah di-strip) → cari kode terdekat
-    if(hasOtpKeyword(plain)){
-      const found = findCodeNearby(plain);
-      if(found) return found;
-    }
-
-    if(!OTP_FALLBACK_NO_KEYWORD) return null;
-
-    // Tier 2: tidak ada kata kunci sama sekali → cari kode yang berdiri sendiri di struktur HTML asli
-    const isolatedHtml = findIsolatedCodeInHtml(mail.bodyHtml);
-    if(isolatedHtml) return isolatedHtml;
-
-    // Tier 3: atau baris teks polos yang isinya cuma kode saja
-    const isolatedText = findIsolatedCodeInPlainText(plain);
-    if(isolatedText) return isolatedText;
-
-    return null;
-  }
-
-  function escapeTgHtml(str){
-    return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  }
-
-  async function sendTelegramMessage(text){
-    if(!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID){
-      console.warn('Telegram belum dikonfigurasi (token/chat id kosong).');
-      return { ok:false, error:'Token/Chat ID belum diisi' };
-    }
-    try{
-      const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({
-          chat_id: TELEGRAM_CHAT_ID,
-          text,
-          parse_mode: 'HTML',
-          disable_web_page_preview: true
-        })
-      });
-      const data = await res.json().catch(()=>null);
-      if(!res.ok || !data || !data.ok){
-        // Ini alasan paling umum kenapa "notifikasi tidak masuk sama sekali":
-        // pakai Markdown lama gampang ditolak Telegram kalau subjek email ada karakter _ * ` [ ]
-        // tanpa error yang kelihatan di UI (cuma nongol di console). Sekarang pakai HTML mode + di-escape.
-        const desc = (data && data.description) ? data.description : `HTTP ${res.status}`;
-        console.warn('Telegram menolak pesan:', desc);
-        return { ok:false, error: desc };
-      }
-      return { ok:true };
-    }catch(err){
-      console.warn('Gagal mengirim notifikasi Telegram (cek koneksi/CSP di hosting):', err);
-      return { ok:false, error: String(err && err.message || err) };
-    }
-  }
-
-  function buildBodyPreview(mail){
-    const raw = (mail.body && mail.body.trim()) ? mail.body : stripHtml(mail.bodyHtml);
-    const clean = (raw || '').replace(/\s+/g, ' ').trim();
-    if(!clean) return '(tidak ada isi teks)';
-    const MAX = 700;
-    return clean.length > MAX ? clean.slice(0, MAX) + '…' : clean;
-  }
-
-  function notifyNewMailTelegram(mail, otp){
-    const otpLine = otp ? `\n\n🔐 Kode: <code>${escapeTgHtml(otp)}</code>` : '';
-    const preview = buildBodyPreview(mail);
-    const text = `📩 <b>Email Baru Masuk</b>\n\nAlamat: <code>${escapeTgHtml(currentAddress)}</code>\nDari: ${escapeTgHtml(formatSender(mail.from))}\nSubjek: ${escapeTgHtml(mail.subject || '(tanpa subjek)')}${otpLine}\n\n<i>Isi Pesan:</i>\n${escapeTgHtml(preview)}`;
-    sendTelegramMessage(text).then(r=>{
-      if(!r.ok) console.warn('Notify Telegram gagal untuk mail', mail.id, '-', r.error);
-    });
-  }
-
-  function showOtpNotification(otp, mail){
-    const el = document.getElementById('otpNotify');
-    const codeEl = document.getElementById('otpNotifyCode');
-    const fromEl = document.getElementById('otpNotifyFrom');
-    const copyBtn = document.getElementById('otpNotifyCopy');
-
-    codeEl.textContent = otp;
-    fromEl.textContent = `dari ${formatSender(mail.from)}`;
-    copyBtn.textContent = 'Salin';
-    copyBtn.classList.remove('copied');
-    el.classList.add('show');
-
-    if(el._hideTimer) clearTimeout(el._hideTimer);
-    el._hideTimer = setTimeout(()=> el.classList.remove('show'), 10000);
-  }
-
-  document.getElementById('otpNotifyClose').addEventListener('click', ()=>{
-    const el = document.getElementById('otpNotify');
-    if(el._hideTimer) clearTimeout(el._hideTimer);
-    el.classList.remove('show');
-  });
-
-  document.getElementById('otpNotifyCopy').addEventListener('click', ()=>{
-    const code = document.getElementById('otpNotifyCode').textContent;
-    navigator.clipboard.writeText(code).then(()=>{
-      const btn = document.getElementById('otpNotifyCopy');
-      btn.textContent = 'Tersalin!';
-      btn.classList.add('copied');
-      showToast('Kode OTP disalin');
-    });
-  });
-
-  function processOtpForNewMail(mail){
-    // Ditunda 1 tick: biar item email muncul dulu di list (sudah di-insert sebelum fungsi ini dipanggil),
-    // baru parsing HTML berat (deteksi OTP) jalan. Ini yang bikin email HTML besar kerasa "lemot muncul"
-    // sebelumnya — karena parsing-nya blocking di tick yang sama dengan render list.
-    setTimeout(()=>{
-      let otp = null;
-      if(!notifiedOtpIds.has(mail.id)){
-        otp = extractOtp(mail);
-        if(otp){
-          notifiedOtpIds.add(mail.id);
-          showOtpNotification(otp, mail);
         }
+
+      }, 100);
+
+
+    function updateProgress() {
+
+      const value =
+        Math.min(
+          Math.floor(currentProgress),
+          100
+        );
+
+      percentage.textContent =
+        value + "%";
+
+      progress.style.width =
+        value + "%";
+
+
+      if (value < 30) {
+
+        status.textContent =
+          "Menyiapkan halaman...";
+
       }
-      notifyNewMailTelegram(mail, otp);
-    }, 0);
-  }
 
-  /* ---------- Render list kotak masuk ---------- */
-  function mailItemHtml(mail){
-    const hasHtml = mail.bodyHtml && mail.bodyHtml.trim().length > 0;
-    const hasImg = mailHasImage(mail);
-    let badges = '';
-    if(hasHtml) badges += `<span class="mail-badge html">HTML</span>`;
-    if(hasImg) badges += `<span class="mail-badge img">🖼 Gambar</span>`;
-    return `
-      <div class="mail-item" data-id="${mail.id}">
-        <div class="mail-top">
-          <div class="mail-from">${escapeHtml(formatSender(mail.from))}</div>
-          <div class="mail-time">${timeAgo(mail.receivedAt)}</div>
-        </div>
-        <div class="mail-subject">${escapeHtml(mail.subject || '(tanpa subjek)')}</div>
-        ${badges ? `<div class="mail-badges">${badges}</div>` : ''}
-      </div>`;
-  }
+      else if (value < 60) {
 
-  function attachClickHandler(el){
-    el.addEventListener('click', ()=>{
-      const mail = emailCache[el.dataset.id];
-      if(mail) openModal(mail);
-    });
-  }
+        status.textContent =
+          "Menghubungkan ke Arras Mail...";
 
-  function renderInbox(emails){
-    emails.forEach(mail => emailCache[mail.id] = mail);
-
-    if(!emails || emails.length === 0){
-      inboxList.innerHTML = `
-        <div class="empty-state">
-          <div class="env">✉</div>
-          <p>Belum ada surat masuk.<br>Kirim email ke alamat di atas, akan muncul otomatis di sini.</p>
-        </div>`;
-      firstRenderDone = true;
-      return;
-    }
-
-    const incomingIds = emails.map(m => m.id);
-    const newOnes = emails.filter(m => !knownIds.has(m.id));
-
-    if(!firstRenderDone){
-      inboxList.innerHTML = emails.map(mailItemHtml).join('');
-      document.querySelectorAll('.mail-item').forEach(attachClickHandler);
-      firstRenderDone = true;
-      if(!suppressNotifyForInitialLoad){
-        // Alamat ini belum pernah dilacak di browser ini -> semua email yang muncul
-        // di render pertama dianggap benar-benar baru (mis. langsung kirim OTP setelah generate alamat).
-        newOnes.forEach(mail => processOtpForNewMail(mail));
       }
-      // Kalau suppressNotifyForInitialLoad true, berarti ini reload alamat LAMA yang sudah
-      // pernah dilacak sebelumnya -> jangan notify ulang untuk histori lama, cukup ditampilkan.
-    } else if(newOnes.length > 0){
-      newOnes.slice().reverse().forEach(mail => {
-        const div = document.createElement('div');
-        div.innerHTML = mailItemHtml(mail);
-        const el = div.firstElementChild;
-        attachClickHandler(el);
-        inboxList.insertBefore(el, inboxList.firstChild);
-        processOtpForNewMail(mail);
-      });
-    }
 
-    document.querySelectorAll('.mail-item').forEach(el=>{
-      const mail = emailCache[el.dataset.id];
-      if(mail){
-        const timeEl = el.querySelector('.mail-time');
-        if(timeEl) timeEl.textContent = timeAgo(mail.receivedAt);
+      else if (value < 90) {
+
+        status.textContent =
+          "Memuat antarmuka...";
+
       }
-    });
 
-    knownIds = new Set(incomingIds);
-    saveKnownIds(currentAddress, knownIds);
-  }
+      else {
 
-  /* ---------- Modal detail email ---------- */
-  function openModal(mail){
-    document.getElementById('modalSubject').textContent = mail.subject || '(tanpa subjek)';
-    document.getElementById('modalMeta').textContent = `Dari: ${formatSender(mail.from)}  •  ${new Date(mail.receivedAt).toLocaleString('id-ID')}`;
+        status.textContent =
+          "Hampir selesai...";
 
-    const toggle = document.getElementById('viewToggle');
-    const bodyEl = document.getElementById('modalBody');
-    const frameEl = document.getElementById('modalHtmlFrame');
-    const btnHtml = document.getElementById('btnViewHtml');
-    const btnText = document.getElementById('btnViewText');
-    const attachGrid = document.getElementById('attachGrid');
+      }
 
-    const hasHtml = mail.bodyHtml && mail.bodyHtml.trim().length > 0;
-    const inlineImgUrls = extractImageUrlsFromText(mail.body);
-
-    function renderTextView(){
-      bodyEl.innerHTML = '';
-      bodyEl.textContent = mail.body || '(tidak ada isi)';
-      inlineImgUrls.forEach(url=>{
-        const img = document.createElement('img');
-        img.src = url;
-        img.className = 'inline-body-img';
-        img.loading = 'lazy';
-        img.addEventListener('click', ()=> openLightbox(url));
-        bodyEl.appendChild(img);
-      });
     }
 
-    if(hasHtml){
-      toggle.style.display = 'flex';
-      frameEl.srcdoc = mail.bodyHtml;
-      frameEl.style.display = 'block';
-      bodyEl.style.display = 'none';
-      btnHtml.classList.add('active');
-      btnText.classList.remove('active');
 
-      btnHtml.onclick = ()=>{
-        frameEl.style.display = 'block';
-        bodyEl.style.display = 'none';
-        btnHtml.classList.add('active');
-        btnText.classList.remove('active');
-      };
-      btnText.onclick = ()=>{
-        renderTextView();
-        bodyEl.style.display = 'block';
-        frameEl.style.display = 'none';
-        btnText.classList.add('active');
-        btnHtml.classList.remove('active');
-      };
-    }else{
-      toggle.style.display = 'none';
-      frameEl.style.display = 'none';
-      bodyEl.style.display = 'block';
-      renderTextView();
+    /*
+     * iframe selesai dimuat
+     */
+
+    frame.addEventListener(
+      "load",
+      () => {
+
+        frameLoaded = true;
+
+        finishLoading();
+
+      }
+    );
+
+
+    /*
+     * Setelah iframe siap,
+     * progress dipaksa menuju 100%.
+     */
+
+    function finishLoading() {
+
+      clearInterval(progressTimer);
+
+      const finish =
+        setInterval(() => {
+
+          currentProgress += 4;
+
+          if (currentProgress >= 100) {
+
+            currentProgress = 100;
+
+            updateProgress();
+
+            clearInterval(finish);
+
+            status.textContent =
+              "Selesai";
+
+            setTimeout(() => {
+
+              loading.classList.add("hide");
+
+            }, 350);
+
+          }
+
+          else {
+
+            updateProgress();
+
+          }
+
+        }, 25);
+
     }
 
-    const imageAttachments = getImageAttachments(mail);
-    if(imageAttachments.length > 0){
-      attachGrid.innerHTML = imageAttachments.map(att=>{
-        const src = attachmentSrc(att);
-        const name = att.filename || att.name || 'gambar';
-        return `<div class="attach-thumb" style="background-image:url('${src}')" data-src="${src}">
-          <div class="attach-name">${escapeHtml(name)}</div>
-        </div>`;
-      }).join('');
-      attachGrid.querySelectorAll('.attach-thumb').forEach(el=>{
-        el.addEventListener('click', ()=> openLightbox(el.dataset.src));
-      });
-    } else {
-      attachGrid.innerHTML = '';
-    }
 
-    document.getElementById('modalOverlay').classList.add('show');
-  }
+    /*
+     * Fallback.
+     *
+     * Kalau iframe gagal memberikan event load,
+     * loading tetap dilepas setelah 15 detik.
+     */
 
-  function openLightbox(src){
-    document.getElementById('lightboxImg').src = src;
-    document.getElementById('lightbox').classList.add('show');
-  }
-  document.getElementById('lightbox').addEventListener('click', ()=>{
-    document.getElementById('lightbox').classList.remove('show');
-  });
+    setTimeout(() => {
 
-  document.getElementById('modalClose').addEventListener('click', ()=>{
-    document.getElementById('modalOverlay').classList.remove('show');
-  });
-  document.getElementById('modalOverlay').addEventListener('click', (e)=>{
-    if(e.target.id === 'modalOverlay') e.currentTarget.classList.remove('show');
-  });
+      if (!frameLoaded) {
 
-  /* ---------- Polling inbox ---------- */
-  async function fetchInbox(silent){
-    if(!silent) statusText.textContent = 'memeriksa…';
-    try{
-      const start = Date.now();
-      const res = await fetch(`${API_BASE}/inbox?address=${encodeURIComponent(currentAddress)}`);
-      const data = await res.json();
-      renderInbox(data.emails || []);
-      const elapsed = Date.now() - start;
-      const wait = Math.max(0, 2000 - elapsed);
-      setTimeout(()=>{ statusText.textContent = 'Active...'; }, wait);
-    }catch(err){
-      statusText.textContent = 'gagal terhubung';
-    }
-  }
+        clearInterval(progressTimer);
 
-  function startPolling(){
-    if(pollTimer) clearInterval(pollTimer);
-    fetchInbox(true);
-    pollTimer = setInterval(()=> fetchInbox(true), POLL_INTERVAL);
-  }
+        currentProgress = 100;
 
-  function setAddress(addr){
-    currentAddress = addr;
-    localStorage.setItem('kotak_address', addr);
-    addressText.textContent = addr;
-    const hasHistory = localStorage.getItem(knownIdsKey(addr)) !== null;
-    knownIds = loadKnownIds(addr);
-    suppressNotifyForInitialLoad = hasHistory; // alamat lama yg sudah punya riwayat -> jangan notify batch lama
-    firstRenderDone = false;
-    startPolling();
-  }
+        updateProgress();
 
-  document.getElementById('copyBtn').addEventListener('click', ()=>{
-    navigator.clipboard.writeText(currentAddress).then(()=> showToast('Alamat disalin'));
-  });
+        status.textContent =
+          "Selesai";
 
-  document.getElementById('newAddrBtn').addEventListener('click', ()=>{
-    setAddress(generateAddress());
-    showToast('Alamat baru dibuat');
-  });
+        setTimeout(() => {
 
-  document.getElementById('refreshBtn').addEventListener('click', ()=>{
-    fetchInbox(false);
-  });
+          loading.classList.add("hide");
 
-  document.getElementById('testTelegramBtn').addEventListener('click', async ()=>{
-    showToast('Mengirim tes...');
-    const r = await sendTelegramMessage(`✅ <b>Tes Notifikasi</b>\n\nWebsite berhasil terhubung ke bot Telegram ini.\nAlamat aktif: <code>${escapeTgHtml(currentAddress)}</code>`);
-    showToast(r.ok ? 'Tes terkirim! Cek Telegram' : `Gagal: ${r.error}`);
-    if(!r.ok) console.warn('Detail gagal tes Telegram:', r.error);
-  });
+        }, 400);
 
-  /* ================= Status Perangkat (data asli) ================= */
-  function detectBrowser(){
-    const ua = navigator.userAgent;
-    if(/Edg\//.test(ua)) return 'Edge';
-    if(/OPR\//.test(ua) || /Opera/.test(ua)) return 'Opera';
-    if(/Chrome\//.test(ua) && !/Chromium/.test(ua)) return 'Chrome';
-    if(/Firefox\//.test(ua)) return 'Firefox';
-    if(/Safari\//.test(ua) && /Version\//.test(ua)) return 'Safari';
-    return 'Tidak diketahui';
-  }
+      }
 
-  function detectDevice(){
-    const ua = navigator.userAgent;
-    if(/Android/.test(ua)) return 'Android';
-    if(/iPhone|iPad|iPod/.test(ua)) return 'iOS';
-    if(/Windows/.test(ua)) return 'Windows';
-    if(/Macintosh/.test(ua)) return 'macOS';
-    if(/Linux/.test(ua)) return 'Linux';
-    return 'Tidak diketahui';
-  }
+    }, 15000);
 
-  async function detectCountry(){
-    const el = document.getElementById('statNegara');
-    try{
-      const res = await fetch('https://ipapi.co/json/');
-      const data = await res.json();
-      el.textContent = data.country_name || 'Tidak diketahui';
-    }catch(err){
-      el.textContent = 'Tidak terdeteksi';
-    }
-  }
-
-  function getBatteryColor(pct){
-    if(pct <= 25) return '#ff3b3b';      // merah
-    if(pct <= 50) return '#ff9f1c';      // oranye
-    if(pct <= 70) return '#ffde59';      // kuning
-    return '#a3f7bf';                    // ijo muda
-  }
-
-  async function detectBattery(){
-    const valEl = document.getElementById('statBattery');
-    const outlineEl = document.getElementById('statBatteryOutline');
-    const nubEl = document.getElementById('statBatteryNub');
-    const fillEl = document.getElementById('statBatteryFill');
-    if(!navigator.getBattery){
-      valEl.textContent = 'Tidak didukung';
-      return;
-    }
-    try{
-      const battery = await navigator.getBattery();
-      const update = ()=>{
-        const pct = Math.round(battery.level * 100);
-        const color = getBatteryColor(pct);
-        valEl.textContent = `${pct}%${battery.charging ? ' (charging)' : ''}`;
-        fillEl.style.fill = color;
-        fillEl.setAttribute('width', Math.max(1, Math.round(13 * battery.level)));
-      };
-      update();
-      battery.addEventListener('levelchange', update);
-      battery.addEventListener('chargingchange', update);
-    }catch(err){
-      valEl.textContent = 'Tidak didukung';
-    }
-  }
-
-  document.getElementById('statBrowser').textContent = detectBrowser();
-  document.getElementById('statDevice').textContent = detectDevice();
-  detectCountry();
-  detectBattery();
-
-  /* ================= Video Anime Player (single source, autoplay, tanpa kontrol) ================= */
-  const animeVideo = document.getElementById('animeVideo');
-  animeVideo.muted = true;
-  animeVideo.src = ANIME_VIDEO_URL;
-  animeVideo.addEventListener('error', ()=> showToast('Gagal memutar — cek link video'));
-  animeVideo.play().catch(()=>{ /* menunggu browser mengizinkan autoplay */ });
-
-  /* ================= Music Player ala Spotify ================= */
-  const audio = new Audio();
-  let curTrackIndex = 0;
-  let isPlaying = false;
-
-  const elCover = document.getElementById('playerCover');
-  const elTitle = document.getElementById('playerTitle');
-  const elArtist = document.getElementById('playerArtist');
-  const elProgress = document.getElementById('playerProgress');
-  const elProgressFill = document.getElementById('playerProgressFill');
-  const elCurTime = document.getElementById('playerCurTime');
-  const elDurTime = document.getElementById('playerDurTime');
-  const btnPlayPause = document.getElementById('btnPlayPause');
-  const btnNext = document.getElementById('btnNext');
-  const elTracklist = document.getElementById('playerTracklist');
-
-  function formatTime(sec){
-    if(!isFinite(sec) || sec < 0) sec = 0;
-    const m = Math.floor(sec/60);
-    const s = Math.floor(sec%60).toString().padStart(2,'0');
-    return `${m}:${s}`;
-  }
-
-  function renderTracklist(){
-    elTracklist.innerHTML = TRACKS.map((t,i)=>`
-      <div class="player-track-item ${i===curTrackIndex ? 'active':''}" data-index="${i}">
-        <span class="player-track-name">${i+1}. ${escapeHtml(t.title)} — ${escapeHtml(t.artist)}</span>
-        <span>${i===curTrackIndex && isPlaying ? '♪' : ''}</span>
-      </div>
-    `).join('');
-    elTracklist.querySelectorAll('.player-track-item').forEach(el=>{
-      el.addEventListener('click', ()=>{
-        loadTrack(parseInt(el.dataset.index));
-        playTrack();
-      });
-    });
-  }
-
-  function loadTrack(index){
-    if(TRACKS.length === 0) return;
-    curTrackIndex = (index + TRACKS.length) % TRACKS.length;
-    const track = TRACKS[curTrackIndex];
-    audio.src = track.url;
-    elTitle.textContent = track.title;
-    elArtist.textContent = track.artist;
-    if(track.cover){
-      elCover.style.backgroundImage = `url('${track.cover}')`;
-      elCover.textContent = '';
-    } else {
-      elCover.style.backgroundImage = '';
-      elCover.textContent = '🎵';
-    }
-    elProgressFill.style.width = '0%';
-    elCurTime.textContent = '0:00';
-    elDurTime.textContent = '0:00';
-    renderTracklist();
-  }
-
-  function playTrack(){
-    audio.play().then(()=>{
-      isPlaying = true;
-      btnPlayPause.textContent = '⏸ Pause';
-      renderTracklist();
-    }).catch(()=>{
-      showToast('Gagal memutar — cek link musik');
-    });
-  }
-
-  function pauseTrack(){
-    audio.pause();
-    isPlaying = false;
-    btnPlayPause.textContent = '▶ Play';
-    renderTracklist();
-  }
-
-  function nextTrack(){
-    loadTrack(curTrackIndex + 1);
-    playTrack();
-  }
-
-  btnPlayPause.addEventListener('click', ()=>{
-    if(!audio.src){ loadTrack(0); playTrack(); return; }
-    if(isPlaying) pauseTrack(); else playTrack();
-  });
-
-  btnNext.addEventListener('click', nextTrack);
-
-  audio.addEventListener('timeupdate', ()=>{
-    if(audio.duration){
-      elProgressFill.style.width = (audio.currentTime / audio.duration * 100) + '%';
-      elCurTime.textContent = formatTime(audio.currentTime);
-      elDurTime.textContent = formatTime(audio.duration);
-    }
-  });
-
-  audio.addEventListener('ended', nextTrack);
-
-  elProgress.addEventListener('click', (e)=>{
-    if(!audio.duration) return;
-    const rect = elProgress.getBoundingClientRect();
-    const ratio = (e.clientX - rect.left) / rect.width;
-    audio.currentTime = ratio * audio.duration;
-  });
-
-  if(TRACKS.length > 0) loadTrack(0);
-
-  // init
-  setAddress(currentAddress);
-</script>
-
-
-
+  </script>
 
 </body>
+</html>
